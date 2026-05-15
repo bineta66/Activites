@@ -15,6 +15,7 @@ from .forms import JournalForm
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from .forms import RegisterForm
+from django.contrib import messages
 
 
 @login_required(login_url='login')
@@ -142,6 +143,13 @@ class JournalCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.auteur = self.request.user
+
+        # MESSAGE SUCCESS
+        messages.success(
+            self.request,
+            "Le journal a été créé avec succès !"
+        )
+
         return super().form_valid(form)
 
 

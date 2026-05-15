@@ -216,6 +216,30 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    {% if messages %}
+
+<div class="position-fixed top-0 start-50 translate-middle-x mt-3"
+     style="z-index: 1050; width: 350px;">
+
+    {% for message in messages %}
+
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center shadow"
+             role="alert">
+
+            {{ message }}
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
     {% if user.is_authenticated %}
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -258,7 +282,7 @@
                 <input type="text" placeholder="Rechercher...">
             </div>
             <div class="actions">
-                <div class="icon" title="Notifications">🔔</div>
+                <div class="icon" title="Notifications"><i class="fa-solid fa-bell"></i></div>
                 <div class="icon" title="Profil">
                     <i class="bi bi-person-circle"></i>
                 </div>
@@ -269,6 +293,7 @@
         <main class="dashboard-content">
             {% block content %}{% endblock %}
         </main>
+    
     </div>
     {% else %}
         {% block login_content %}<div class="container mt-5"><div class="row justify-content-center"><div class="col-md-6">Authentification requise</div></div></div>{% endblock %}
