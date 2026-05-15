@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - STA{% endblock %}
+
+{% block extra_head %}
+<style>
+
+    body{
+        background: #f5f7fb;
+    }
+
+    .dashboard-hero {
+        background: linear-gradient(135deg, #0b1f3a 0%, #102d52 100%);
+        color: white;
+        border-radius: 24px;
+        padding: 35px;
+    }
+
+    .dashboard-card {
+        border-radius: 20px;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .dashboard-card:hover{
+        transform: translateY(-4px);
+    }
+
+    .mini-icon{
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:22px;
+    }
+
+    .table thead tr th{
+        font-size: 12px;
+        color: gray;
+        text-transform: uppercase;
+    }
+
+    .activity-badge{
+        padding:8px 15px;
+        border-radius:50px;
+        font-size:12px;
+    }
+
+    .dashboard-table-card{
+        border-radius: 25px;
+        overflow: hidden;
+    }
+
+    .filter-box{
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- HERO -->
+    <div class="dashboard-hero shadow mb-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+            <div>
+                <h2 class="fw-bold mb-2">
+                    Bienvenue {{ user.username }}
+                </h2>
+
+                <p class="mb-0 text-light opacity-75">
+                    Plateforme collaborative de suivi des activités.
+                </p>
+            </div>
+
+            <div class="text-end">
+                <h3 class="fw-bold">{{ total_activities }}</h3>
+                <small class="opacity-100">Activités enregistrées</small>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- STATS CARDS (CONSERVÉES) -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Journaux</small>
+                        <h2 class="fw-bold mb-0">{{ total_activities }}</h2>
+                    </div>
+                    <div class="mini-icon bg-primary text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Résolues</small>
+                        <h2 class="fw-bold mb-0">{{ resolved_activities }}</h2>
+                    </div>
+                    <div class="mini-icon bg-success text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Bugs</small>
+                        <h2 class="fw-bold mb-0">{{ reported_bugs }}</h2>
+                    </div>
+                    <div class="mini-icon bg-danger text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Catégories</small>
+                        <h2 class="fw-bold mb-0">{{ categories_count }}</h2>
+                    </div>
+                    <div class="mini-icon bg-secondary text-dark"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filter-box shadow-sm mb-4">
+
+        <form method="GET">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-lg-4">
+                    <label class="form-label fw-semibold">Recherche</label>
+                    <input type="text" name="search" class="form-control"
+                           value="{{ request.GET.search }}">
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label fw-semibold">Catégorie</label>
+                    <select name="categorie" class="form-select">
+                        <option value="">Toutes</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}"
+                                {% if request.GET.categorie == cat.id|stringformat:"s" %}selected{% endif %}>
+                                {{ cat.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select name="statut" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="publie" {% if request.GET.statut == 'publie' %}selected{% endif %}>Publié</option>
+                        <option value="brouillon" {% if request.GET.statut == 'brouillon' %}selected{% endif %}>Brouillon</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-primary">Filtrer</button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="card dashboard-card dashboard-table-card">
+
+        <div class="card-header bg-white border-0 p-4">
+            <h4 class="fw-bold mb-1">Journaux récentes</h4>
+        </div>
+
+        <div class="card-body p-0">
+
+            {% if recent_activities %}
+
+            <div class="table-responsive">
+
+                <table class="table align-middle mb-0">
+
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">TITRE</th>
+                            <th>AUTEUR</th>
+                            <th>CATÉGORIE</th>
+                            <th>DATE</th>
+                            <th>STATUT</th>
+                            <th class="text-end pe-4">ACTION</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for activity in recent_activities %}
+
+                        <tr>
+
+                            <td class="ps-4 py-4">
+                                <strong>{{ activity.titre }}</strong><br>
+                                <small class="text-muted">
+                                    {{ activity.contenu|truncatechars:50 }}
+                                </small>
+                            </td>
+
+                            <td>{{ activity.auteur.username }}</td>
+
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    {{ activity.categorie.nom }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ activity.datecreation|date:"d/m/Y H:i" }}
+                            </td>
+
+                            <td>
+                                {% if activity.statut == 'publie' %}
+                                    <span class="badge bg-success">Publié</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Brouillon</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end pe-4">
+                                <a href="{% url 'journal_detail' activity.pk %}" class="btn btn-sm btn-outline-primary">
+                                    Voir
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        
+            <div class="d-flex justify-content-center py-4">
+
+                <nav>
+                    <ul class="pagination">
+
+                        {% if recent_activities.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ recent_activities.previous_page_number }}&search={{ request.GET.search }}&categorie={{ request.GET.categorie }}&statut={{ request.GET.statut }}">
+                                    Précédent
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ recent_activities.number }} / {{ recent_activities.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if recent_activities.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ recent_activities.next_page_number }}&search={{ request.GET.search }}&categorie={{ request.GET.categorie }}&statut={{ request.GET.statut }}">
+                                    Suivant
+                                </a>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+
+            </div>
+
+            {% else %}
+
+            <div class="text-center py-5">
+                <h5 class="fw-bold text-muted">Aucune activité disponible</h5>
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ journal.titre }} - STA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card border-0 bg-light">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">{{ journal.titre }}</h4>
+                    <small class="text-muted">
+                        <i class="bi bi-calendar"></i> {{ journal.datecreation|date:"l d F Y à H:i" }}
+                        • <i class="bi bi-tag"></i> {{ journal.categorie.nom }}
+                    </small>
+                </div>
+                <div>
+                    <span class="badge fs-6 bg-{{ journal.statut|yesno:'success,warning' }} border px-3 py-2">
+                        {{ journal.get_statut_display }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {% if journal.capture %}
+                <div class="mb-4 text-center">
+                    <img src="{{ journal.capture.url }}" alt="{{ journal.titre }}" class="img-fluid rounded shadow-sm" style="max-height: 400px;">
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-text-paragraph"></i> Description détaillée</h5>
+                    <div class="bg-white p-3 rounded border">
+                        {{ journal.contenu|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-info-circle"></i> Informations</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="bg-white p-3 rounded border">
+                                <strong>Auteur:</strong><br>
+                                {{ journal.auteur.get_full_name|default:journal.auteur.username }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-white p-3 rounded border">
+                                <strong>Dernière modification:</strong><br>
+                                {{ journal.datecreation|date:"d/m/Y H:i:s" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if journal.historiques.exists %}
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-clock-history"></i> Historique des modifications</h5>
+                    <div class="bg-white rounded border">
+                        {% for historique in journal.historiques.all %}
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <small class="text-muted">{{ historique.datecreation|date:"d/m/Y H:i" }}</small>
+                                    <p class="mb-0 mt-1">{{ historique.message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-footer bg-white border-0">
+                <div class="d-flex gap-2">
+                    {%  if user == journal.auteur  %}
+                    <a href="{% url 'journal_update' journal.pk %}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    <a href="{% url 'journal_delete' journal.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'journal_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

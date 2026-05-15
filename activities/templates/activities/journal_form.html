@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Modifier{% else %}Créer{% endif %} une Note - STA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 bg-light">
+            <div class="card-header bg-white border-0">
+                <h4 class="mb-0">
+                    <i class="bi bi-{% if object %}pencil{% else %}plus-circle{% endif %}"></i>
+                    {% if object %}Modifier{% else %}Créer{% endif %} une Note d'Activité
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="{{ form.titre.id_for_label }}" class="form-label">Titre de la note *</label>
+                                {{ form.titre }}
+                                {% if form.titre.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.titre.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.statut.id_for_label }}" class="form-label">Statut</label>
+                                {{ form.statut }}
+                                {% if form.statut.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.statut.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.categorie.id_for_label }}" class="form-label">Catégorie *</label>
+                        {{ form.categorie }}
+                        {% if form.categorie.errors %}
+                            <div class="invalid-feedback d-block">{{ form.categorie.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.contenu.id_for_label }}" class="form-label">Contenu détaillé *</label>
+                        {{ form.contenu }}
+                        {% if form.contenu.errors %}
+                            <div class="invalid-feedback d-block">{{ form.contenu.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Décrivez votre activité, les problèmes rencontrés, les solutions apportées...</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.capture.id_for_label }}" class="form-label">Capture d'écran (optionnel)</label>
+                        {{ form.capture }}
+                        {% if form.capture.errors %}
+                            <div class="invalid-feedback d-block">{{ form.capture.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Formats acceptés: JPG, PNG, GIF. Taille max: 5MB</small>
+                        {% if object and object.capture %}
+                        <div class="mt-2">
+                            <small class="text-muted">Capture actuelle:</small><br>
+                            <img src="{{ object.capture.url }}" alt="Capture actuelle" class="img-thumbnail mt-1" style="max-width: 200px;">
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i>
+                            {% if object %}Modifier{% else %}Créer{% endif %} la Note
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+input[type="text"],
+select,
+textarea {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+}
+
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+    outline: none;
+}
+
+input[type="file"] {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+}
+</style>
+{% endblock %}
